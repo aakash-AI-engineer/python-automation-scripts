@@ -1,0 +1,53 @@
+import csv
+import sys
+import os
+from collections import Counter
+
+def analyze_csv(file_path):
+    """
+    Analyzes a CSV file and prints basic statistics.
+    """
+    if not os.path.exists(file_path):
+        print(f"Error: File {file_path} does not exist.")
+        return
+
+    try:
+        with open(file_path, 'r', newline='', encoding='utf-8') as csvfile:
+            reader = csv.reader(csvfile)
+            rows = list(reader)
+
+            if not rows:
+                print("CSV file is empty.")
+                return
+
+            num_rows = len(rows)
+            num_cols = len(rows[0]) if rows else 0
+
+            print(f"Number of rows: {num_rows}")
+            print(f"Number of columns: {num_cols}")
+
+            # Print column headers if present
+            if num_rows > 0:
+                print("Column headers:", rows[0])
+
+            # Simple analysis: count unique values in each column
+            if num_rows > 1:
+                for i, col_name in enumerate(rows[0]):
+                    values = [row[i] for row in rows[1:] if i < len(row)]
+                    unique_count = len(set(values))
+                    print(f"Column '{col_name}': {unique_count} unique values")
+
+                    # If column seems like skills or keywords, count frequencies
+                    if 'skill' in col_name.lower() or 'keyword' in col_name.lower():
+                        flat_list = [item.strip() for sublist in values for item in sublist.split(',') if sublist]
+                        skill_counts = Counter(flat_list)
+                        print(f"  Top skills: {skill_counts.most_common(5)}")
+
+    except Exception as e:
+        print(f"Error analyzing CSV: {e}")
+
+if __name__ == "__main__":
+    if len(sys.argv) != 2:
+        print("Usage: python csv_analyzer.py <csv_file_path>")
+        sys.exit(1)
+    analyze_csv(sys.argv[1])
